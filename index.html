@@ -167,6 +167,16 @@ button{ font-family:inherit; cursor:pointer; border:none; outline:none; }
 .optional-signup{ margin-top:24px; }
 .divider{ display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px; margin-bottom:18px; }
 .divider::before, .divider::after{ content:""; flex:1; height:1px; background:var(--border); }
+
+/* ===== site-wide sections ===== */
+.site-tabs{ display:flex; gap:6px; background:var(--bg-soft); border:1px solid var(--border); border-radius:12px; padding:4px; margin-bottom:20px; }
+.site-tab{ flex:1; padding:10px 2px; border-radius:9px; font-size:11.5px; font-weight:600; color:var(--muted); background:transparent; white-space:nowrap; }
+.site-tab.active{ background:var(--accent); color:#241700; }
+.section{ display:none; }
+.section.active{ display:block; }
+.info-card{ background:var(--bg-soft); border:1px solid var(--border); border-radius:14px; padding:20px; font-size:14.5px; line-height:2.1; color:var(--text); opacity:.92; }
+.edit-note{ margin-top:14px; font-size:12px; color:var(--muted); text-align:center; border:1px dashed var(--border); border-radius:12px; padding:10px 14px; line-height:1.8; }
+.contact-link{ display:block; text-decoration:none; color:inherit; }
 .config-warning{
   background:var(--danger-soft); border:1px solid var(--danger); color:var(--danger);
   border-radius:12px; padding:14px 16px; font-size:13px; text-align:center; margin-bottom:16px; line-height:1.9;
@@ -207,6 +217,14 @@ button{ font-family:inherit; cursor:pointer; border:none; outline:none; }
       <span class="setup-link" id="openSetup">راهنمای راه‌اندازی (۲ دقیقه) — نمایش بده</span>
     </div>
 
+    <div class="site-tabs" id="siteTabs">
+      <button class="site-tab active" data-section="order" type="button">🛒 سفارش</button>
+      <button class="site-tab" data-section="account" type="button">👤 حساب</button>
+      <button class="site-tab" data-section="about" type="button">ℹ️ درباره</button>
+      <button class="site-tab" data-section="contact" type="button">📞 تماس</button>
+    </div>
+
+    <div id="section-order" class="section active">
     <div id="formView">
       <div class="userbar" id="userBar">
         <div class="who">وارد شده با <b id="userEmail">—</b></div>
@@ -257,6 +275,70 @@ button{ font-family:inherit; cursor:pointer; border:none; outline:none; }
       <div class="nav" style="margin-top:20px;">
         <button class="btn btn-primary" id="resetBtn">ثبت سفارش جدید</button>
       </div>
+    </div>
+    </div><!-- /section-order -->
+
+    <div id="section-account" class="section">
+      <h1 id="authTitle">ورود به حساب</h1>
+      <p class="sub">با ایمیل و رمز عبور وارد بشید یا حساب جدید بسازید.</p>
+
+      <div class="userbar" id="accountUserBar" style="display:none;">
+        <div class="who">وارد شده با <b id="accountUserEmail">—</b></div>
+        <button class="logout" id="accountLogoutBtn" type="button">خروج</button>
+      </div>
+
+      <div id="authFormWrap">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="login" type="button">ورود</button>
+          <button class="tab-btn" data-tab="register" type="button">ثبت‌نام</button>
+        </div>
+        <div class="field">
+          <label>ایمیل</label>
+          <input type="text" id="authEmail" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label>رمز عبور</label>
+          <input type="password" id="authPassword" placeholder="حداقل ۶ کاراکتر">
+          <div class="err" id="authErr">خطا</div>
+        </div>
+        <div class="nav">
+          <button class="btn btn-primary" id="authSubmit">ورود</button>
+        </div>
+        <p class="hint" id="authHint" style="text-align:center; margin-top:14px;"></p>
+      </div>
+    </div>
+
+    <div id="section-about" class="section">
+      <h1>درباره ما</h1>
+      <p class="sub">کمی درباره‌ی این کسب‌وکار</p>
+      <div class="info-card">
+        <p>
+          سحر خلف‌زاده — متخصص پوست 🙋🏻‍♀️<br>
+          درمانگر ریشه‌ای اصولی «چین‌وچروک و لک»<br>
+          محصولات ایتالیایی<br>
+          ارسال فوق‌سریع به سراسر کشور ✈️
+        </p>
+      </div>
+    </div>
+
+    <div id="section-contact" class="section">
+      <h1>تماس با ما</h1>
+      <p class="sub">از این راه‌ها می‌تونید در ارتباط باشید.</p>
+
+      <div class="order-row">
+        <div class="top"><div class="name">📞 شماره تماس</div></div>
+        <div class="meta"><a href="tel:+989375539891" style="color:var(--accent); text-decoration:none;">۰۹۳۷۵۵۳۹۸۹۱</a></div>
+      </div>
+      <div class="order-row">
+        <div class="top"><div class="name">💬 آیدی روبیکا</div></div>
+        <div class="meta">@sahar_khalafzade</div>
+      </div>
+      <div class="order-row">
+        <div class="top"><div class="name">📢 کانال روبیکا</div></div>
+        <div class="meta"><a href="https://rubika.ir/joinc/EBFBHFCD0IBKVTLIERYRFLAOKJKCAZUM" target="_blank" style="color:var(--accent); text-decoration:none;">عضویت در کانال</a></div>
+      </div>
+
+      <div class="edit-note">اگه بعداً خواستید این اطلاعات رو عوض کنید، داخل کد بخش «section-contact» رو ویرایش کنید.</div>
     </div>
 
   </div>
@@ -374,11 +456,18 @@ function translateAuthError(msg){
 
 function updateAuthUI(){
   const userBar = document.getElementById('userBar');
+  const accountUserBar = document.getElementById('accountUserBar');
+  const authFormWrap = document.getElementById('authFormWrap');
   if(currentUser){
     userBar.style.display = 'flex';
     document.getElementById('userEmail').textContent = currentUser.email;
+    accountUserBar.style.display = 'flex';
+    document.getElementById('accountUserEmail').textContent = currentUser.email;
+    authFormWrap.style.display = 'none';
   } else {
     userBar.style.display = 'none';
+    accountUserBar.style.display = 'none';
+    authFormWrap.style.display = 'block';
   }
 }
 
@@ -392,6 +481,77 @@ document.getElementById('logoutBtn').addEventListener('click', async ()=>{
   await supabaseClient.auth.signOut();
   currentUser = null;
   updateAuthUI();
+});
+document.getElementById('accountLogoutBtn').addEventListener('click', async ()=>{
+  await supabaseClient.auth.signOut();
+  currentUser = null;
+  updateAuthUI();
+});
+
+/* ================= SITE SECTIONS ================= */
+document.querySelectorAll('.site-tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.site-tab').forEach(b=>b.classList.remove('active'));
+    document.getElementById('section-' + btn.dataset.section).classList.add('active');
+    btn.classList.add('active');
+  });
+});
+
+/* ================= ACCOUNT: LOGIN / REGISTER ================= */
+let authMode = 'login';
+document.querySelectorAll('#section-account .tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#section-account .tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    authMode = btn.dataset.tab;
+    document.getElementById('authSubmit').textContent = authMode==='login' ? 'ورود' : 'ثبت‌نام';
+    document.getElementById('authTitle').textContent = authMode==='login' ? 'ورود به حساب' : 'ساخت حساب جدید';
+    document.getElementById('authErr').style.display = 'none';
+    document.getElementById('authHint').textContent = '';
+  });
+});
+
+document.getElementById('authSubmit').addEventListener('click', async ()=>{
+  if(!isConfigured){ alert('اول باید SUPABASE_URL و SUPABASE_ANON_KEY را در کد تنظیم کنید.'); return; }
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authErr');
+  const hintEl = document.getElementById('authHint');
+  errEl.style.display = 'none';
+  hintEl.textContent = '';
+
+  if(!email || !password){ errEl.textContent = 'ایمیل و رمز عبور را کامل کنید.'; errEl.style.display='block'; return; }
+  if(password.length < 6){ errEl.textContent = 'رمز عبور باید حداقل ۶ کاراکتر باشد.'; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('authSubmit');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> در حال پردازش...';
+
+  try{
+    if(authMode === 'login'){
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+      currentUser = data.user;
+      updateAuthUI();
+    } else {
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if(error) throw error;
+      if(data.session){
+        currentUser = data.user;
+        updateAuthUI();
+      } else {
+        hintEl.textContent = 'ثبت‌نام انجام شد. اگر تایید ایمیل فعال باشد، صندوق ورودی خود را چک کنید، سپس از تب «ورود» وارد شوید.';
+      }
+    }
+  } catch(e){
+    errEl.textContent = translateAuthError(e.message);
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 });
 
 /* ================= OPTIONAL SIGNUP AFTER ORDER ================= */
