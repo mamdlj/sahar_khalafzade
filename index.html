@@ -77,7 +77,7 @@ h1{ font-size:20px; font-weight:800; margin-bottom:4px; }
 
 .field{ margin-bottom:16px; }
 label{ display:block; font-size:13.5px; color:var(--muted); margin-bottom:8px; font-weight:500; }
-input[type=text], input[type=tel], textarea{
+input[type=text], input[type=tel], input[type=password], textarea{
   width:100%; background:var(--bg-soft); border:1.5px solid var(--border);
   border-radius:12px; padding:13px 14px; color:var(--text); font-size:15px;
   font-family:'Vazirmatn', sans-serif; outline:none; transition:border-color .2s, box-shadow .2s;
@@ -153,6 +153,20 @@ button{ font-family:inherit; cursor:pointer; border:none; outline:none; }
 @keyframes sp{ to{ transform:rotate(360deg); } }
 
 .notice{ font-size:11.5px; color:var(--muted); text-align:center; margin-top:14px; opacity:.75; }
+
+/* ===== auth ===== */
+.tabs{ display:flex; gap:8px; background:var(--bg-soft); border:1px solid var(--border); border-radius:12px; padding:4px; margin-bottom:20px; }
+.tab-btn{ flex:1; padding:10px; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--muted); background:transparent; }
+.tab-btn.active{ background:var(--accent); color:#241700; }
+.userbar{ display:none; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.userbar .who{ font-size:12.5px; color:var(--muted); }
+.userbar .who b{ color:var(--text); font-weight:600; }
+.userbar .logout{ background:var(--bg-soft); border:1px solid var(--border); color:var(--muted); padding:7px 12px; border-radius:9px; font-size:12px; font-weight:600; }
+.userbar .logout:hover{ color:var(--danger); border-color:var(--danger); }
+
+.optional-signup{ margin-top:24px; }
+.divider{ display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px; margin-bottom:18px; }
+.divider::before, .divider::after{ content:""; flex:1; height:1px; background:var(--border); }
 .config-warning{
   background:var(--danger-soft); border:1px solid var(--danger); color:var(--danger);
   border-radius:12px; padding:14px 16px; font-size:13px; text-align:center; margin-bottom:16px; line-height:1.9;
@@ -194,6 +208,11 @@ button{ font-family:inherit; cursor:pointer; border:none; outline:none; }
     </div>
 
     <div id="formView">
+      <div class="userbar" id="userBar">
+        <div class="who">وارد شده با <b id="userEmail">—</b></div>
+        <button class="logout" id="logoutBtn" type="button">خروج</button>
+      </div>
+
       <h1 id="stepTitle">نام و نام خانوادگی</h1>
       <p class="sub" id="stepSub">لطفاً نام کامل خودتان را وارد کنید.</p>
 
@@ -217,6 +236,24 @@ button{ font-family:inherit; cursor:pointer; border:none; outline:none; }
         <div class="barcode"></div>
       </div>
       <p class="ticket-name">ثبت‌شده برای <b id="nameOut">—</b></p>
+
+      <div class="optional-signup" id="optionalSignup">
+        <div class="divider"><span>یا</span></div>
+        <p class="sub" style="margin-bottom:16px;">می‌خواید یه حساب هم بسازید تا بعداً سفارش‌هاتون رو راحت‌تر پیگیری کنید؟ (اختیاری)</p>
+        <div class="field">
+          <input type="text" id="postEmail" placeholder="ایمیل">
+        </div>
+        <div class="field">
+          <input type="password" id="postPassword" placeholder="رمز عبور (حداقل ۶ کاراکتر)">
+          <div class="err" id="postErr">خطا</div>
+        </div>
+        <div class="nav">
+          <button class="btn btn-ghost" id="skipSignupBtn" type="button">فعلاً نه</button>
+          <button class="btn btn-primary" id="postSignupBtn" type="button">ساخت حساب</button>
+        </div>
+        <p class="hint" id="postHint" style="text-align:center; margin-top:12px;"></p>
+      </div>
+
       <div class="nav" style="margin-top:20px;">
         <button class="btn btn-primary" id="resetBtn">ثبت سفارش جدید</button>
       </div>
@@ -261,26 +298,33 @@ create table orders (
   rubika_id text not null,
   order_code text not null,
   normalized_name text not null unique,
+  user_id uuid references auth.users(id),
+  user_email text,
   created_at timestamptz not null default now()
 );
 
 alter table orders enable row level security;
 
+-- ثبت سفارش برای همه آزاده (لاگین لازم نیست)
 create policy "anyone can insert orders"
-on orders for insert to anon with check (true);
+on orders for insert to anon, authenticated with check (true);
 
-create policy "anyone can read orders"
-on orders for select to anon using (true);
-
+-- برای ثبت سفارش دوباره با همان نام (آپدیت رکورد موجود) و وصل‌شدن سفارش به حساب بعد از ثبت‌نام اختیاری
 create policy "anyone can update orders"
-on orders for update to anon using (true);
+on orders for update to anon, authenticated using (true);
 
+-- خواندن لازم است هم برای تشخیص سفارش تکراری، هم برای پنل مدیریت
+create policy "anyone can read orders"
+on orders for select to anon, authenticated using (true);
+
+-- حذف لازم است برای دکمه «تکمیل سفارش» در پنل مدیریت
 create policy "anyone can delete orders"
-on orders for delete to anon using (true);</pre>
+on orders for delete to anon, authenticated using (true);</pre>
       </div>
       <ol start="3">
         <li>برید به <b>Project Settings → API</b> و دو مقدار <b>Project URL</b> و <b>anon public key</b> رو بردارید.</li>
         <li>داخل همین فایل، در ابتدای تگ <b>&lt;script&gt;</b> پایینی، مقادیر <b>SUPABASE_URL</b> و <b>SUPABASE_ANON_KEY</b> رو با همون‌ها جایگزین کنید و فایل رو دوباره در گیت‌هاب آپلود کنید.</li>
+        <li>(اختیاری) برای اینکه کاربرها بعد از ثبت‌نام مجبور به تایید ایمیل نباشن، در Supabase برید به <b>Authentication → Providers → Email</b> و گزینه‌ی <b>Confirm email</b> رو خاموش کنید.</li>
       </ol>
     </div>
   </div>
@@ -314,6 +358,92 @@ const steps = [
 let step = 0;
 let formData = { fullName:'', postal:'', address:'', rubikaId:'' };
 let adminAuthed = false;
+let currentUser = null;
+let lastOrderId = null;
+
+/* ================= AUTH ================= */
+function translateAuthError(msg){
+  const m = (msg||'').toLowerCase();
+  if(m.includes('invalid login credentials')) return 'ایمیل یا رمز عبور اشتباه است.';
+  if(m.includes('user already registered')) return 'این ایمیل قبلاً ثبت‌نام کرده — از تب «ورود» استفاده کنید.';
+  if(m.includes('password should be at least')) return 'رمز عبور باید حداقل ۶ کاراکتر باشد.';
+  if(m.includes('email not confirmed')) return 'ایمیل شما هنوز تایید نشده — صندوق ورودی خود را چک کنید.';
+  if(m.includes('unable to validate email')) return 'فرمت ایمیل معتبر نیست.';
+  return 'خطایی رخ داد: ' + msg;
+}
+
+function updateAuthUI(){
+  const userBar = document.getElementById('userBar');
+  if(currentUser){
+    userBar.style.display = 'flex';
+    document.getElementById('userEmail').textContent = currentUser.email;
+  } else {
+    userBar.style.display = 'none';
+  }
+}
+
+async function checkSession(){
+  const { data } = await supabaseClient.auth.getSession();
+  currentUser = data.session ? data.session.user : null;
+  updateAuthUI();
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await supabaseClient.auth.signOut();
+  currentUser = null;
+  updateAuthUI();
+});
+
+/* ================= OPTIONAL SIGNUP AFTER ORDER ================= */
+document.getElementById('skipSignupBtn').addEventListener('click', ()=>{
+  document.getElementById('optionalSignup').style.display = 'none';
+});
+
+document.getElementById('postSignupBtn').addEventListener('click', async ()=>{
+  if(!isConfigured){ alert('اول باید SUPABASE_URL و SUPABASE_ANON_KEY را در کد تنظیم کنید.'); return; }
+  const email = document.getElementById('postEmail').value.trim();
+  const password = document.getElementById('postPassword').value;
+  const errEl = document.getElementById('postErr');
+  const hintEl = document.getElementById('postHint');
+  errEl.style.display = 'none';
+  hintEl.textContent = '';
+
+  if(!email || !password){ errEl.textContent = 'ایمیل و رمز عبور را کامل کنید.'; errEl.style.display='block'; return; }
+  if(password.length < 6){ errEl.textContent = 'رمز عبور باید حداقل ۶ کاراکتر باشد.'; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('postSignupBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> در حال ثبت...';
+
+  try{
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    if(error) throw error;
+    currentUser = data.user || currentUser;
+
+    if(lastOrderId){
+      await supabaseClient.from('orders')
+        .update({ user_id: data.user ? data.user.id : null, user_email: email })
+        .eq('id', lastOrderId);
+    }
+
+    if(data.session){
+      updateAuthUI();
+      hintEl.textContent = 'حساب شما ساخته شد و به این سفارش وصل شد.';
+    } else {
+      hintEl.textContent = 'حساب ساخته شد. اگر تایید ایمیل فعال باشد، صندوق ورودی خود را چک کنید.';
+    }
+    document.getElementById('postEmail').value = '';
+    document.getElementById('postPassword').value = '';
+    btn.disabled = true; // prevent double-signup on this same success screen
+    btn.textContent = 'انجام شد ✓';
+  } catch(e){
+    errEl.textContent = translateAuthError(e.message);
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+});
 
 /* ================= HELPERS ================= */
 function toEnDigits(s){
@@ -439,21 +569,33 @@ async function submitOrder(){
 
     const code = existing ? existing.order_code : generateCode();
 
-    const { error } = await supabaseClient.from('orders').upsert({
+    const { data: saved, error } = await supabaseClient.from('orders').upsert({
       normalized_name: normalized,
       full_name: formData.fullName,
       postal: formData.postal,
       address: formData.address,
       rubika_id: formData.rubikaId,
       order_code: code,
-    }, { onConflict: 'normalized_name' });
+      user_id: currentUser ? currentUser.id : null,
+      user_email: currentUser ? currentUser.email : null,
+    }, { onConflict: 'normalized_name' }).select().single();
 
     if(error) throw error;
+    lastOrderId = saved.id;
 
     document.getElementById('codeOut').textContent = code;
     document.getElementById('nameOut').textContent = formData.fullName;
     document.getElementById('formView').style.display = 'none';
     document.getElementById('ticketView').classList.add('show');
+
+    // reset optional signup block for this fresh success screen
+    const optSignup = document.getElementById('optionalSignup');
+    optSignup.style.display = currentUser ? 'none' : 'block';
+    document.getElementById('postErr').style.display = 'none';
+    document.getElementById('postHint').textContent = '';
+    const postBtn = document.getElementById('postSignupBtn');
+    postBtn.disabled = false;
+    postBtn.textContent = 'ساخت حساب';
 
   } catch(e){
     console.error(e);
@@ -467,6 +609,7 @@ async function submitOrder(){
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   step = 0;
   formData = { fullName:'', postal:'', address:'', rubikaId:'' };
+  lastOrderId = null;
   document.getElementById('ticketView').classList.remove('show');
   document.getElementById('formView').style.display = 'block';
   renderStep();
@@ -606,6 +749,13 @@ async function deleteOrder(id){
 
 /* ================= INIT ================= */
 renderStep();
+if(isConfigured){
+  checkSession();
+  supabaseClient.auth.onAuthStateChange((event, session)=>{
+    currentUser = session ? session.user : null;
+    updateAuthUI();
+  });
+}
 </script>
 </body>
 </html>
